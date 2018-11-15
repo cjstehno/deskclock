@@ -1,30 +1,30 @@
 package com.stehno.clock
 
-import java.awt.Canvas
-import java.awt.Color
-import java.awt.Font
-import java.awt.Graphics
+import java.awt.*
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
-class DateDisplay(private val canvas: Canvas) {
+class DateDisplay: Canvas() {
 
     companion object {
-        private val FORMATTER = DateTimeFormatter.ofPattern("EEEE, MMMM d")
+        private val FORMATTER = DateTimeFormatter.ofPattern("EEE, MMM d")
+        private val FONT = Font("Sans Serif", Font.PLAIN, 24)
     }
 
     private var currentDate: String = calculateDate()
 
     init {
+        preferredSize = Dimension(225, 45)
+
         // Fires at 1s after midnight (just to be sure)
         Scheduler.INSTANCE.schedule(
             {
                 val date = calculateDate()
                 if (date != currentDate) {
                     currentDate = date
-                    canvas.repaint(0, 85, canvas.size.width, 38)
+                    repaint()
                 }
             },
             (LocalTime.of(23, 59, 59).toSecondOfDay() - LocalTime.now().toSecondOfDay()).toLong() + 2,
@@ -32,10 +32,10 @@ class DateDisplay(private val canvas: Canvas) {
         )
     }
 
-    fun draw(g: Graphics) {
+    override fun paint(g: Graphics) {
         g.color = Color.LIGHT_GRAY
-        g.font = Font("Sans Serif", Font.PLAIN, 28)
-        g.drawString(currentDate, 20, 115)
+        g.font = FONT
+        g.drawString(currentDate, 45, 30)
     }
 
     private fun calculateDate() = LocalDate.now().format(FORMATTER)

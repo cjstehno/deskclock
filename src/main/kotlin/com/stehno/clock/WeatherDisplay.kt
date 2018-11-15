@@ -4,18 +4,17 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.awt.Canvas
-import java.awt.Color
-import java.awt.Graphics
+import java.awt.*
+import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.ImageIcon
 
-class WeatherDisplay(private val canvas: Canvas,
-                     private val zipCode: String,
-                     private val apiKey: String) {
+class WeatherDisplay(private val zipCode: String, private val apiKey: String) : Canvas() {
 
     companion object {
         private const val BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
+        private val FORMATTER = DecimalFormat("0")
+        private val FONT = Font("Sans Serif", Font.PLAIN, 24)
 
         private fun resolveWeatherImage(code: String?): String {
             return when (code) {
@@ -29,34 +28,40 @@ class WeatherDisplay(private val canvas: Canvas,
                 else -> "temperature.png"
             }
         }
+
+        private fun loadImage(path: String) = ImageIcon(WeatherDisplay::class.java.getResource(path))
     }
 
-    private var icon = ImageIcon(ClockCanvas::class.java.getResource("/temperature.png"))
-    private var temp: Double = 0.0
-    private var wind: Double = 0.0
+    private var icon = loadImage("/temperature.png")
+    private var temp: String = "0"
+    private var wind: String = "0"
 
     init {
+        preferredSize = Dimension(225, 75)
+
         updateWeather()
 
         Scheduler.INSTANCE.scheduleAtFixedRate({
             updateWeather()
-            canvas.repaint(0, 130, canvas.size.width, 60)
+            repaint()
         }, 0, 10, TimeUnit.MINUTES)
     }
 
-    fun draw(g: Graphics) {
+    override fun paint(g: Graphics) {
+        g.drawImage(icon.image, 0, 5, 64, 64, null)
+
         g.color = Color.LIGHT_GRAY
-        g.drawImage(icon.image, 20, 125, 64, 64, null)
-        g.drawString("$temp ℉ ($wind mph)", 92, 169)
+        g.font = FONT
+        g.drawString("$temp ℉ ($wind m/h)", 75, 45)
     }
 
     private fun updateWeather() {
         val info = currentWeather()
 
         val conditions = resolveWeatherImage(info?.conditions)
-        icon = ImageIcon(ClockCanvas::class.java.getResource("/$conditions"))
-        temp = info?.temperature ?: 0.0
-        wind = info?.winds ?: 0.0
+        icon = loadImage("/$conditions")
+        temp = FORMATTER.format(info?.temperature ?: 0.0)
+        wind = FORMATTER.format(info?.winds ?: 0.0)
     }
 
     private fun currentWeather(): WeatherInfo? {

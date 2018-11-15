@@ -2,36 +2,39 @@ package com.stehno.clock
 
 import java.awt.Canvas
 import java.awt.Color
-import java.awt.Font
+import java.awt.Dimension
+import java.awt.Font.TRUETYPE_FONT
+import java.awt.Font.createFont
 import java.awt.Graphics
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ofPattern
 import java.util.concurrent.TimeUnit
 
-class ClockDisplay(private val canvas: Canvas) {
+class ClockDisplay : Canvas() {
 
     companion object {
-        private val FONT = Font.createFont(Font.TRUETYPE_FONT, ClockDisplay::class.java.getResourceAsStream("/DIGITALDREAM.ttf"))
-        private val FORMATTER = DateTimeFormatter.ofPattern("hh:mm a")
+        private val FONT = createFont(TRUETYPE_FONT, ClockDisplay::class.java.getResourceAsStream("/DIGITALDREAM.ttf"))
+        private val FORMATTER = ofPattern("hh:mm a")
     }
 
     private var currentTime = currentTime()
 
     init {
-        // repaint only the clock area
+        preferredSize = Dimension(225, 50)
+
         Scheduler.INSTANCE.scheduleAtFixedRate({
             val time = currentTime()
             if (time != currentTime) {
                 currentTime = time
-                canvas.repaint(0, 5, canvas.size.width, 80)
+                repaint()
             }
         }, 10, 10, TimeUnit.SECONDS)
     }
 
-    fun draw(g: Graphics) {
+    override fun paint(g: Graphics) {
         g.color = Color.GREEN
-        g.font = FONT.deriveFont(64f)
-        g.drawString(currentTime, 10, 65)
+        g.font = FONT.deriveFont(32f)
+        g.drawString(currentTime, 10, 35)
     }
 
     private fun currentTime(): String {

@@ -1,9 +1,9 @@
 package com.stehno.clock
 
+import java.awt.Color
 import java.awt.Dimension
-import java.awt.GridLayout
+import java.awt.FlowLayout
 import java.awt.Point
-import java.lang.reflect.Executable
 import java.util.concurrent.Executors
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -19,14 +19,19 @@ class DeskClock(zipCode: String, apiKey: String) : JFrame("DeskClock") {
     }
 
     init {
-        size = Dimension(450, 260)
+        size = Dimension(250, 210)
         location = Point(800, 800)
         isAlwaysOnTop = true
-        isResizable = false
+//        isResizable = false
         defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
-        contentPane = JPanel(GridLayout(1, 1))
-        contentPane.add(ClockCanvas(zipCode, apiKey))
+        val panel = JPanel(FlowLayout(FlowLayout.CENTER, 0, 0))
+        panel.background = Color.DARK_GRAY
+
+        contentPane = panel
+        contentPane.add(ClockDisplay())
+        contentPane.add(DateDisplay())
+        contentPane.add(WeatherDisplay(zipCode, apiKey))
     }
 }
 
