@@ -14,3 +14,14 @@ You will need an API key for the OpenWeatherMap API.
     java -jar deskclock.jar <zip-code> <api-key>
 
 ![Clock screenshot](screenshot.png "Screenshot")
+
+### On Windows
+
+On Windows, you can run the clock without a console by creating a `.bat` file similar to:
+
+```bat
+@echo off
+start javaw -jar deskclock-0.0.1-all.jar <zip> <key>
+```
+
+Where `<zip>` and `<key>` are replaced by their appropriate values.
