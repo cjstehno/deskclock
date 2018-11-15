@@ -5,7 +5,6 @@ import com.beust.klaxon.Parser
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.awt.*
-import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 import javax.swing.ImageIcon
 
@@ -13,7 +12,6 @@ class WeatherDisplay(private val zipCode: String, private val apiKey: String) : 
 
     companion object {
         private const val BASE_URL = "http://api.openweathermap.org/data/2.5/weather"
-        private val FORMATTER = DecimalFormat("0")
         private val FONT = Font("Sans Serif", Font.PLAIN, 24)
 
         private fun resolveWeatherImage(code: String?): String {
@@ -33,8 +31,7 @@ class WeatherDisplay(private val zipCode: String, private val apiKey: String) : 
     }
 
     private var icon = loadImage("/temperature.png")
-    private var temp: String = "0"
-    private var wind: String = "0"
+    private var display = "-"
 
     init {
         preferredSize = Dimension(225, 75)
@@ -42,9 +39,10 @@ class WeatherDisplay(private val zipCode: String, private val apiKey: String) : 
         updateWeather()
 
         Scheduler.INSTANCE.scheduleAtFixedRate({
-            updateWeather()
-            repaint()
-        }, 0, 10, TimeUnit.MINUTES)
+            if (updateWeather()) {
+                repaint()
+            }
+        }, 30, 30, TimeUnit.MINUTES)
     }
 
     override fun paint(g: Graphics) {
@@ -52,16 +50,22 @@ class WeatherDisplay(private val zipCode: String, private val apiKey: String) : 
 
         g.color = Color.LIGHT_GRAY
         g.font = FONT
-        g.drawString("$temp ℉ ($wind m/h)", 75, 45)
+        g.drawString(display, 75, 45)
     }
 
-    private fun updateWeather() {
+    private fun updateWeather(): Boolean {
         val info = currentWeather()
 
         val conditions = resolveWeatherImage(info?.conditions)
-        icon = loadImage("/$conditions")
-        temp = FORMATTER.format(info?.temperature ?: 0.0)
-        wind = FORMATTER.format(info?.winds ?: 0.0)
+        val newIcon = loadImage("/$conditions")
+        val newDisplay = info.toString()
+
+        val updated = newIcon != icon || newDisplay != display
+
+        icon = newIcon
+        display = newDisplay
+
+        return updated
     }
 
     private fun currentWeather(): WeatherInfo? {

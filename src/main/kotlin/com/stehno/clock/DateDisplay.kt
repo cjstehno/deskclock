@@ -6,11 +6,15 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
-class DateDisplay: Canvas() {
+class DateDisplay : Canvas() {
 
     companion object {
         private val FORMATTER = DateTimeFormatter.ofPattern("EEE, MMM d")
         private val FONT = Font("Sans Serif", Font.PLAIN, 24)
+
+        private fun calculateDelay(): Long {
+            return (LocalTime.of(23, 59, 59).toSecondOfDay() - LocalTime.now().toSecondOfDay()).toLong() + 2
+        }
     }
 
     private var currentDate: String = calculateDate()
@@ -20,14 +24,8 @@ class DateDisplay: Canvas() {
 
         // Fires at 1s after midnight (just to be sure)
         Scheduler.INSTANCE.schedule(
-            {
-                val date = calculateDate()
-                if (date != currentDate) {
-                    currentDate = date
-                    repaint()
-                }
-            },
-            (LocalTime.of(23, 59, 59).toSecondOfDay() - LocalTime.now().toSecondOfDay()).toLong() + 2,
+            this::updateDate,
+            calculateDelay(),
             TimeUnit.SECONDS
         )
     }
@@ -36,6 +34,13 @@ class DateDisplay: Canvas() {
         g.color = Color.LIGHT_GRAY
         g.font = FONT
         g.drawString(currentDate, 45, 30)
+    }
+
+    private fun updateDate() {
+        currentDate = calculateDate()
+        repaint()
+
+        Scheduler.INSTANCE.schedule(this::updateDate, calculateDelay(), TimeUnit.SECONDS)
     }
 
     private fun calculateDate() = LocalDate.now().format(FORMATTER)

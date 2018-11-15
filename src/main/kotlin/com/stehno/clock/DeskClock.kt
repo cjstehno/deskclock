@@ -22,7 +22,7 @@ class DeskClock(zipCode: String, apiKey: String) : JFrame("DeskClock") {
         size = Dimension(250, 210)
         location = Point(800, 800)
         isAlwaysOnTop = true
-//        isResizable = false
+        isResizable = false
         defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
         val panel = JPanel(FlowLayout(FlowLayout.CENTER, 0, 0))
